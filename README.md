@@ -1,1 +1,3 @@
-# CSEN269-Audit
+# Project: CRM for Teachers
+
+### Interview Details
