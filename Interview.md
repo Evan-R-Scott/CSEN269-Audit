@@ -4,6 +4,7 @@
 * What is their overarching goal
 * How are they going about achieving these
 * Target Audience
+  * Who is this platform serving? Who are those users serving? 
 * Focal features of the platform
 * Platform Traffic [What metrics are available]
   * Genre of Users (Age, Occupation, etc)
