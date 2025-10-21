@@ -2,7 +2,7 @@
 
 * What problem are we trying to solve? How did we decide this was a problem that needed solving?
    > A: t
-* Overview of the project.
+* Overview of the project. High-level walk-through of what it does. Is it still actively being developed [In a certain development stage]?
    > A:
 * What does success look like for this project? What does failure look like?
    > A:
@@ -19,13 +19,13 @@
    > A:
 * How do you measure impact? What metrics matter most [for determining the value this platform provides]?
    > A:
-* Has this been deployed/tested by real users? Is there any feedback?
+* Has this been deployed/tested by real users? Is there any feedback? Documentation?
    > A:
 * Platform Traffic [What metrics are available]
   * Genre of Users (Age, Occupation, etc)
   * Time receiving the most traffic
    > A:
-* Is there some structure for the cost to maintain this? Funding?
+* Is there some structure for the cost to maintain this? Funding? Any constraints on the project [time, money, technical]?
    > A:
 * How is this going to be maintained long-term?
    > A:
