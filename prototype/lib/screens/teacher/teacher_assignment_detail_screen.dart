@@ -1,0 +1,204 @@
+import 'package:flutter/material.dart';
+import '../../models.dart';
+import 'teacher_scores_screen.dart';
+
+/// Teacher view: single assignment → questions + Scores button.
+class TeacherAssignmentDetailScreen extends StatefulWidget {
+  final Assignment assignment;
+  final VoidCallback onChanged;
+
+  const TeacherAssignmentDetailScreen({
+    super.key,
+    required this.assignment,
+    required this.onChanged,
+  });
+
+  @override
+  State<TeacherAssignmentDetailScreen> createState() =>
+      _TeacherAssignmentDetailScreenState();
+}
+
+class _TeacherAssignmentDetailScreenState
+    extends State<TeacherAssignmentDetailScreen> {
+  void _addQuestion() async {
+    if (widget.assignment.type == QuestionType.mcq) {
+      final textController = TextEditingController();
+      final optionControllers = List.generate(4, (_) => TextEditingController());
+      int correctIndex = 0;
+
+      final q = await showDialog<Question>(
+        context: context,
+        builder: (_) => StatefulBuilder(
+          builder: (context, setStateDialog) => AlertDialog(
+            title: const Text('Add MCQ Question'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: textController,
+                    decoration:
+                        const InputDecoration(labelText: 'Question Text'),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Options:'),
+                  const SizedBox(height: 8),
+                  for (int i = 0; i < 4; i++)
+                    TextField(
+                      controller: optionControllers[i],
+                      decoration: InputDecoration(labelText: 'Option ${i + 1}'),
+                    ),
+                  const SizedBox(height: 12),
+                  const Text('Correct Option:'),
+                  DropdownButton<int>(
+                    value: correctIndex,
+                    items: List.generate(
+                      4,
+                      (index) => DropdownMenuItem(
+                        value: index,
+                        child: Text('Option ${index + 1}'),
+                      ),
+                    ),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setStateDialog(() => correctIndex = val);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (textController.text.trim().isEmpty ||
+                      optionControllers.any(
+                        (c) => c.text.trim().isEmpty,
+                      )) {
+                    return;
+                  }
+                  final q = Question(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    text: textController.text.trim(),
+                    type: QuestionType.mcq,
+                    options: optionControllers
+                        .map((c) => c.text.trim())
+                        .toList(),
+                    correctIndex: correctIndex,
+                  );
+                  Navigator.pop(context, q);
+                },
+                child: const Text('Add'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (q != null) {
+        setState(() {
+          widget.assignment.questions.add(q);
+        });
+        widget.onChanged();
+      }
+    } else {
+      final textController = TextEditingController();
+      final q = await showDialog<Question>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Add Recording Question'),
+          content: TextField(
+            controller: textController,
+            decoration:
+                const InputDecoration(labelText: 'Question Text'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (textController.text.trim().isEmpty) return;
+                final q = Question(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  text: textController.text.trim(),
+                  type: QuestionType.recording,
+                );
+                Navigator.pop(context, q);
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      );
+
+      if (q != null) {
+        setState(() {
+          widget.assignment.questions.add(q);
+        });
+        widget.onChanged();
+      }
+    }
+  }
+
+  void _viewScores() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeacherScoresScreen(assignment: widget.assignment),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final a = widget.assignment;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(a.title),
+        actions: [
+          TextButton(
+            onPressed: _viewScores,
+            child: const Text('Scores', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          ListTile(
+            title: Text(a.text),
+            subtitle: Text(
+              'Posted: ${a.postedDate.toLocal().toString().split(' ').first} • '
+              'Due: ${a.dueDate.toLocal().toString().split(' ').first}',
+            ),
+          ),
+          const Divider(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: a.questions.length,
+              itemBuilder: (_, index) {
+                final q = a.questions[index];
+                return ListTile(
+                  leading: Text('Q${index + 1}'),
+                  title: Text(q.text),
+                  subtitle:
+                      Text(q.type == QuestionType.mcq ? 'MCQ' : 'Recording'),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addQuestion,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Question'),
+      ),
+    );
+  }
+}
