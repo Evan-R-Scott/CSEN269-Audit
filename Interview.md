@@ -1,4 +1,12 @@
-## Interview process with Allan
+## Interview process
+
+The primary intention of this platform was to connect students with teachers. With changes in the education curriculum by the government of Rwanda, the project was basically halted/shut down. We spoke with William (previous team lead), who built out the Android side of the application, which appears to have been the only interface for interaction. 
+
+There are two main aspects of the platform for students, which include a math game and assignments. Assignments take on two types: MC or a verbally recorded response. On the teacher side, there is class/student management regarding grading and the creation of assignments. A bit of ambiguity here since this project appeared to be building out the platform itself, not implementing the curriculum, so uncertain as to how the shutdown was related to the curriculum change.
+
+Some initial areas for potential improvement involve more flexibility on assignments (the types of questions available [T/F, short answer, drawing, etc]), and potentially a platform to upload resources/connect teachers with parents, as it was stated SLW provides various resources to students' parents as well.
+
+### with Allan
 
 * What problem are we trying to solve? How did we decide this was a problem that needed solving?
    > A: t
