@@ -30,13 +30,15 @@ class _TeacherAssignmentsTabState extends State<TeacherAssignmentsTab> {
               children: [
                 TextField(
                   controller: titleController,
-                  decoration:
-                      const InputDecoration(labelText: 'Assignment Title'),
+                  decoration: const InputDecoration(
+                    labelText: 'Assignment Title',
+                  ),
                 ),
                 TextField(
                   controller: textController,
-                  decoration:
-                      const InputDecoration(labelText: 'Assignment Text'),
+                  decoration: const InputDecoration(
+                    labelText: 'Assignment Text',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -53,6 +55,10 @@ class _TeacherAssignmentsTabState extends State<TeacherAssignmentsTab> {
                         DropdownMenuItem(
                           value: QuestionType.recording,
                           child: Text('Recording'),
+                        ),
+                        DropdownMenuItem(
+                          value: QuestionType.drawing,
+                          child: Text('Drawing'),
                         ),
                       ],
                       onChanged: (val) {
@@ -73,8 +79,9 @@ class _TeacherAssignmentsTabState extends State<TeacherAssignmentsTab> {
                         final picked = await showDatePicker(
                           context: context,
                           firstDate: DateTime.now(),
-                          lastDate:
-                              DateTime.now().add(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                           initialDate: dueDate,
                         );
                         if (picked != null) {
@@ -150,7 +157,11 @@ class _TeacherAssignmentsTabState extends State<TeacherAssignmentsTab> {
             title: Text(a.title),
             subtitle: Text(
               'Due: ${a.dueDate.toLocal().toString().split(' ').first} '
-              '• Type: ${a.type == QuestionType.mcq ? "MCQ" : "Recording"}',
+              '• Type: ${a.type == QuestionType.mcq
+                  ? "MCQ"
+                  : a.type == QuestionType.recording
+                  ? "Recording"
+                  : "Drawing"}',
             ),
             onTap: () => _openAssignment(a),
           );

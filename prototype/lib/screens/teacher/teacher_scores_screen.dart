@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
+import 'teacher_drawing_scores_screen.dart';
 
 /// Teacher view: list of submissions, grade and comment.
 class TeacherScoresScreen extends StatelessWidget {
@@ -9,20 +10,24 @@ class TeacherScoresScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Handle drawing assignments
+    if (assignment.type == QuestionType.drawing) {
+      return TeacherDrawingScoresScreen(assignment: assignment);
+    }
+
     final subs = FakeDb.submissions
         .where((s) => s.assignmentId == assignment.id)
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Scores: ${assignment.title}'),
-      ),
+      appBar: AppBar(title: Text('Scores: ${assignment.title}')),
       body: ListView.builder(
         itemCount: subs.length,
         itemBuilder: (_, index) {
           final s = subs[index];
-          final student = FakeDb.students
-              .firstWhere((st) => st.id == s.studentId);
+          final student = FakeDb.students.firstWhere(
+            (st) => st.id == s.studentId,
+          );
           return ListTile(
             leading: const Icon(Icons.person),
             title: Text(student.name),
@@ -71,15 +76,11 @@ class TeacherScoresScreen extends StatelessWidget {
                       TextField(
                         controller: scoreController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Score',
-                        ),
+                        decoration: const InputDecoration(labelText: 'Score'),
                       ),
                       TextField(
                         controller: commentController,
-                        decoration: const InputDecoration(
-                          labelText: 'Comment',
-                        ),
+                        decoration: const InputDecoration(labelText: 'Comment'),
                       ),
                     ],
                   ),

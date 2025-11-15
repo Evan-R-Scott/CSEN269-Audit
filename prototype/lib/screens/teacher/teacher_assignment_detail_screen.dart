@@ -23,7 +23,10 @@ class _TeacherAssignmentDetailScreenState
   void _addQuestion() async {
     if (widget.assignment.type == QuestionType.mcq) {
       final textController = TextEditingController();
-      final optionControllers = List.generate(4, (_) => TextEditingController());
+      final optionControllers = List.generate(
+        4,
+        (_) => TextEditingController(),
+      );
       int correctIndex = 0;
 
       final q = await showDialog<Question>(
@@ -37,8 +40,9 @@ class _TeacherAssignmentDetailScreenState
                 children: [
                   TextField(
                     controller: textController,
-                    decoration:
-                        const InputDecoration(labelText: 'Question Text'),
+                    decoration: const InputDecoration(
+                      labelText: 'Question Text',
+                    ),
                   ),
                   const SizedBox(height: 12),
                   const Text('Options:'),
@@ -76,9 +80,7 @@ class _TeacherAssignmentDetailScreenState
               TextButton(
                 onPressed: () {
                   if (textController.text.trim().isEmpty ||
-                      optionControllers.any(
-                        (c) => c.text.trim().isEmpty,
-                      )) {
+                      optionControllers.any((c) => c.text.trim().isEmpty)) {
                     return;
                   }
                   final q = Question(
@@ -105,7 +107,7 @@ class _TeacherAssignmentDetailScreenState
         });
         widget.onChanged();
       }
-    } else {
+    } else if (widget.assignment.type == QuestionType.recording) {
       final textController = TextEditingController();
       final q = await showDialog<Question>(
         context: context,
@@ -113,8 +115,7 @@ class _TeacherAssignmentDetailScreenState
           title: const Text('Add Recording Question'),
           content: TextField(
             controller: textController,
-            decoration:
-                const InputDecoration(labelText: 'Question Text'),
+            decoration: const InputDecoration(labelText: 'Question Text'),
           ),
           actions: [
             TextButton(
@@ -143,6 +144,43 @@ class _TeacherAssignmentDetailScreenState
         });
         widget.onChanged();
       }
+    } else if (widget.assignment.type == QuestionType.drawing) {
+      final textController = TextEditingController();
+      final q = await showDialog<Question>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Add Drawing Question'),
+          content: TextField(
+            controller: textController,
+            decoration: const InputDecoration(labelText: 'Drawing Prompt'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (textController.text.trim().isEmpty) return;
+                final q = Question(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  text: textController.text.trim(),
+                  type: QuestionType.drawing,
+                );
+                Navigator.pop(context, q);
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      );
+
+      if (q != null) {
+        setState(() {
+          widget.assignment.questions.add(q);
+        });
+        widget.onChanged();
+      }
     }
   }
 
@@ -153,6 +191,16 @@ class _TeacherAssignmentDetailScreenState
         builder: (_) => TeacherScoresScreen(assignment: widget.assignment),
       ),
     );
+  }
+
+  String _getQuestionType(QuestionType type) {
+    if (type == QuestionType.mcq) {
+      return 'MCQ';
+    } else if (type == QuestionType.recording) {
+      return 'Recording';
+    } else {
+      return 'Drawing';
+    }
   }
 
   @override
@@ -186,8 +234,7 @@ class _TeacherAssignmentDetailScreenState
                 return ListTile(
                   leading: Text('Q${index + 1}'),
                   title: Text(q.text),
-                  subtitle:
-                      Text(q.type == QuestionType.mcq ? 'MCQ' : 'Recording'),
+                  subtitle: Text(_getQuestionType(q.type)),
                 );
               },
             ),
