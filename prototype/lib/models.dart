@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
 /// --------------------------------------------
 /// ENUMS
 /// --------------------------------------------
 
 /// Represents different question types.
-enum QuestionType {
-  mcq,
-  recording,
-}
+enum QuestionType { mcq, recording, drawing }
 
 /// --------------------------------------------
 /// DATA MODELS
@@ -19,10 +17,7 @@ class Teacher {
   String username;
   String password;
 
-  Teacher({
-    required this.username,
-    required this.password,
-  });
+  Teacher({required this.username, required this.password});
 }
 
 /// Model for a student.
@@ -85,8 +80,10 @@ class Submission {
   QuestionType type;
   List<int>? mcqAnswers;
   String? recordingNote;
+  String? drawingImageId;
   int? score;
   String? comment;
+  DateTime? submittedAt;
 
   Submission({
     required this.assignmentId,
@@ -94,8 +91,10 @@ class Submission {
     required this.type,
     this.mcqAnswers,
     this.recordingNote,
+    this.drawingImageId,
     this.score,
     this.comment,
+    this.submittedAt,
   });
 }
 
@@ -117,6 +116,12 @@ class FakeDb {
   static List<Assignment> assignments = [];
 
   static List<Submission> submissions = [];
+
+  static Map<String, Uint8List> drawingImages = {};
+
+  static String generateDrawingId() {
+    return 'DRAW_${DateTime.now().millisecondsSinceEpoch}';
+  }
 }
 
 /// --------------------------------------------
