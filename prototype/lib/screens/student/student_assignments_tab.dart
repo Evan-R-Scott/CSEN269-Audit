@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'student_mcq_assignment_screen.dart';
 import 'student_recording_assignment_screen.dart';
+import 'student_drawing_assignment_screen.dart';
 
 /// Student tab: list of assignments + open them for answering.
 class StudentAssignmentsTab extends StatefulWidget {
@@ -25,11 +26,22 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
           ),
         ),
       ).then((_) => setState(() {}));
-    } else {
+    } else if (a.type == QuestionType.recording) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => StudentRecordingAssignmentScreen(
+            assignment: a,
+            student: widget.student,
+          ),
+        ),
+      ).then((_) => setState(() {}));
+    } else if (a.type == QuestionType.drawing) {
+      // ADD THIS BLOCK
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => StudentDrawingAssignmentScreen(
             assignment: a,
             student: widget.student,
           ),
@@ -47,9 +59,7 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
       itemBuilder: (_, index) {
         final a = assignments[index];
         final submission = FakeDb.submissions.firstWhere(
-          (s) =>
-              s.assignmentId == a.id &&
-              s.studentId == widget.student.id,
+          (s) => s.assignmentId == a.id && s.studentId == widget.student.id,
           orElse: () => Submission(
             assignmentId: a.id,
             studentId: widget.student.id,
@@ -57,11 +67,14 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
           ),
         );
 
-        final isSubmitted = submission.score != null ||
+        final isSubmitted =
+            submission.score != null ||
             (submission.mcqAnswers != null &&
                 submission.mcqAnswers!.isNotEmpty) ||
             (submission.recordingNote != null &&
-                submission.recordingNote!.isNotEmpty);
+                submission.recordingNote!.isNotEmpty) ||
+            (submission.drawingImageId != null &&
+                submission.drawingImageId!.isNotEmpty);
 
         final status = isSubmitted ? 'Submitted' : 'Not submitted';
 
