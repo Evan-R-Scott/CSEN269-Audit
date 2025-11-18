@@ -5,4 +5,4 @@
 
 [Prototype](prototype/README.md)
 
-[Project Scope](ProjectScore.md)
+[Project Scope](ProjectScope.md)
