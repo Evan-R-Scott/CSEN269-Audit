@@ -158,10 +158,10 @@ class DrawingCanvas extends StatefulWidget {
     : super(key: key);
 
   @override
-  State<DrawingCanvas> createState() => _DrawingCanvasState();
+  State<DrawingCanvas> createState() => DrawingCanvasState();
 }
 
-class _DrawingCanvasState extends State<DrawingCanvas> {
+class DrawingCanvasState extends State<DrawingCanvas> {
   final List<DrawingStroke> strokes = [];
   final List<LineSegment> lines = [];
   final List<RectangleShape> rectangles = [];
@@ -180,6 +180,19 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
+  }
+
+  void clearCanvas() {
+    setState(() {
+      strokes.clear();
+      lines.clear();
+      rectangles.clear();
+      circles.clear();
+      currentPoint = null;
+      lineStart = null;
+      rectStart = null;
+      currentStrokePoints = null;
+    });
   }
 
   void _onPanStart(DragStartDetails details) {
@@ -310,19 +323,6 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
     widget.onImageGenerated(pngBytes!.buffer.asUint8List());
   }
 
-  void _clearCanvas() {
-    setState(() {
-      strokes.clear();
-      lines.clear();
-      rectangles.clear();
-      circles.clear();
-      currentPoint = null;
-      lineStart = null;
-      rectStart = null;
-      currentStrokePoints = null;
-    });
-  }
-
   void _undoLastAction() {
     setState(() {
       if (strokes.isNotEmpty) {
@@ -398,7 +398,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 const SizedBox(width: 8),
                 // Clear button
                 ElevatedButton.icon(
-                  onPressed: _clearCanvas,
+                  onPressed: clearCanvas,
                   icon: const Icon(Icons.delete),
                   label: const Text('Clear'),
                   style: ElevatedButton.styleFrom(

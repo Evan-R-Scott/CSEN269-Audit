@@ -190,7 +190,10 @@ class _TeacherAssignmentDetailScreenState
       MaterialPageRoute(
         builder: (_) => TeacherScoresScreen(assignment: widget.assignment),
       ),
-    );
+    ).then((_) {
+      // Refresh when coming back from scores screen
+      setState(() {});
+    });
   }
 
   String _getQuestionType(QuestionType type) {
@@ -206,13 +209,42 @@ class _TeacherAssignmentDetailScreenState
   @override
   Widget build(BuildContext context) {
     final a = widget.assignment;
+
+    // Count submissions for this assignment
+    final submissionCount = FakeDb.submissions
+        .where((s) => s.assignmentId == a.id)
+        .length;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(a.title),
         actions: [
-          TextButton(
-            onPressed: _viewScores,
-            child: const Text('Scores', style: TextStyle(color: Colors.white)),
+          // Scores button with submission badge
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Center(
+              child: TextButton.icon(
+                onPressed: _viewScores,
+                icon: const Icon(Icons.assignment_turned_in),
+                label: Text(
+                  'View Submissions (${submissionCount})',
+                  style: const TextStyle(fontSize: 14),
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  backgroundColor: submissionCount > 0
+                      ? Colors.blue[700]
+                      : Colors.grey,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
