@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'teacher_students_tab.dart';
 import 'teacher_assignments_tab.dart';
+import 'teacher_documents_tab.dart';
 
-/// Teacher home screen with bottom navigation: Students / Assignments.
+/// Teacher home screen with bottom navigation: Students / Assignments / Documents.
 class TeacherHomeScreen extends StatefulWidget {
   final Teacher teacher;
 
@@ -17,7 +18,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   int _tabIndex = 0;
 
   void _logout() {
-    // Go back all the way to the first screen.
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
@@ -48,9 +48,9 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       setState(() {
         widget.teacher.password = result;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password changed')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Password changed')));
     }
   }
 
@@ -59,6 +59,10 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     final pages = [
       TeacherStudentsTab(onChanged: () => setState(() {})),
       TeacherAssignmentsTab(onChanged: () => setState(() {})),
+      TeacherDocumentsTab(
+        teacher: widget.teacher,
+        onChanged: () => setState(() {}),
+      ),
     ];
 
     return Scaffold(
@@ -69,10 +73,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
             onPressed: _changePassword,
             icon: const Icon(Icons.settings),
           ),
-          IconButton(
-            onPressed: _logout,
-            icon: const Icon(Icons.logout),
-          ),
+          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
       body: pages[_tabIndex],
@@ -80,14 +81,12 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         selectedIndex: _tabIndex,
         onDestinationSelected: (index) => setState(() => _tabIndex = index),
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.people),
-            label: 'Students',
-          ),
+          NavigationDestination(icon: Icon(Icons.people), label: 'Students'),
           NavigationDestination(
             icon: Icon(Icons.assignment),
             label: 'Assignments',
           ),
+          NavigationDestination(icon: Icon(Icons.folder), label: 'Documents'),
         ],
       ),
     );

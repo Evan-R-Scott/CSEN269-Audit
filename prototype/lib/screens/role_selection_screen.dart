@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'teacher/teacher_auth_screen.dart';
 import 'student/student_login_screen.dart';
+import 'parent/parent_login_screen.dart';
 
-/// Landing screen where user chooses Teacher or Student.
+/// Landing screen where user chooses Teacher, Student, or Parent.
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Teacher–Student App'),
-      ),
+      appBar: AppBar(title: const Text('Teacher–Student App')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -45,6 +44,18 @@ class RoleSelectionScreen extends StatelessWidget {
                   );
                 },
                 child: const Text('I am a Student'),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.tonal(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ParentLoginScreen(),
+                    ),
+                  );
+                },
+                child: const Text('I am a Parent'),
               ),
             ],
           ),

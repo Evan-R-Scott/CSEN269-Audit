@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 
-/// --------------------------------------------
-/// ENUMS
-/// --------------------------------------------
-
 /// Represents different question types.
 enum QuestionType { mcq, recording, drawing }
-
-/// --------------------------------------------
-/// DATA MODELS
-/// --------------------------------------------
 
 /// Model for a teacher account.
 class Teacher {
@@ -98,10 +90,41 @@ class Submission {
   });
 }
 
-/// --------------------------------------------
-/// FAKE DATABASE (for prototype)
-/// --------------------------------------------
+/// Model for a document that parents can access
+class Document {
+  String id;
+  String title;
+  String description;
+  String fileName;
+  DateTime uploadedDate;
+  String uploadedBy;
 
+  Document({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.fileName,
+    required this.uploadedDate,
+    required this.uploadedBy,
+  });
+}
+
+/// Model for a parent account
+class Parent {
+  String id;
+  String name;
+  String email;
+  String password;
+
+  Parent({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.password,
+  });
+}
+
+/// FAKE DATABASE (for prototype)
 class FakeDb {
   static List<Teacher> teachers = [
     Teacher(username: 'teacher1', password: '1234'),
@@ -119,16 +142,50 @@ class FakeDb {
 
   static Map<String, Uint8List> drawingImages = {};
 
+  static List<Document> documents = [
+    Document(
+      id: 'DOC_001',
+      title: 'School Calendar 2025',
+      description: 'Annual school calendar with all important dates',
+      fileName: 'school_calendar_2025.pdf',
+      uploadedDate: DateTime(2025, 1, 15),
+      uploadedBy: 'teacher1',
+    ),
+    Document(
+      id: 'DOC_002',
+      title: 'Parent Handbook',
+      description: 'Complete guide for parents about school policies',
+      fileName: 'parent_handbook.pdf',
+      uploadedDate: DateTime(2025, 1, 10),
+      uploadedBy: 'teacher1',
+    ),
+  ];
+
+  static List<Parent> parents = [
+    Parent(
+      id: 'P001',
+      name: 'Test User',
+      email: 'user@example.com',
+      password: 'parent123',
+    ),
+    Parent(
+      id: 'P002',
+      name: 'Test User2',
+      email: 'user2@example.com',
+      password: 'parent123',
+    ),
+  ];
+
   static String generateDrawingId() {
     return 'DRAW_${DateTime.now().millisecondsSinceEpoch}';
   }
+
+  static String generateDocumentId() {
+    return 'DOC_${DateTime.now().millisecondsSinceEpoch}';
+  }
 }
 
-/// --------------------------------------------
 /// EXTENSIONS & UTILITIES
-/// --------------------------------------------
-
-/// Helper to easily find the first match or null.
 extension FirstOrNullExtension<E> on Iterable<E> {
   E? get firstOrNull {
     final iterator = this.iterator;
