@@ -22,6 +22,8 @@ Some initial areas for potential improvement involve more flexibility on assignm
 
 (Let Allan try out the feature) - Let him try the problem as an MC and then as a drawing assignment
 
+  #### Interview Questions Below:
+
 * What was your first impression/thoughts when you saw the tool? Was it clear what you were supposed to do?
 * Walk me through what you did and saw as you interacted with it for the first time?
 * Were the available drawing tools self-explanatory? Were any of them at all confusing or limited?
