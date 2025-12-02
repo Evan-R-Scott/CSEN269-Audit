@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
-import 'parent_documents_screen.dart';
+import 'parent_child_selection_screen.dart';
 
 /// Parent login screen
 class ParentLoginScreen extends StatefulWidget {
@@ -31,7 +31,9 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => ParentDocumentsScreen(parent: parent)),
+      MaterialPageRoute(
+        builder: (_) => ParentChildSelectionScreen(parent: parent),
+      ),
     );
   }
 

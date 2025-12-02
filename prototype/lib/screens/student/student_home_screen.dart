@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'student_assignments_tab.dart';
+import 'learning_game_screen.dart';
+import '../shared/direct_message_screen.dart';
 
 /// Student home: bottom navigation with Math Game (stub) + Assignments.
 class StudentHomeScreen extends StatefulWidget {
@@ -58,7 +60,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      const Center(child: Text('Math Game (coming soon)')),
+      const LearningGameScreen(),
       StudentAssignmentsTab(student: widget.student),
     ];
 
@@ -66,6 +68,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       appBar: AppBar(
         title: Text('Student: ${widget.student.name}'),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DirectMessageScreen(student: widget.student),
+                ),
+              );
+            },
+            icon: const Icon(Icons.mail),
+            tooltip: 'Messages',
+          ),
           IconButton(
             onPressed: _changePassword,
             icon: const Icon(Icons.settings),
@@ -83,7 +97,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.videogame_asset),
-            label: 'Math Game',
+            label: 'Learn',
           ),
           NavigationDestination(
             icon: Icon(Icons.assignment),

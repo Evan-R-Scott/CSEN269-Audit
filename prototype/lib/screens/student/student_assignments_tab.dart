@@ -3,6 +3,7 @@ import '../../models.dart';
 import 'student_mcq_assignment_screen.dart';
 import 'student_recording_assignment_screen.dart';
 import 'student_drawing_assignment_screen.dart';
+import '../shared/assignment_discussion_screen.dart';
 
 /// Student tab: list of assignments + open them for answering.
 class StudentAssignmentsTab extends StatefulWidget {
@@ -50,6 +51,18 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
     }
   }
 
+  void _openDiscussion(Assignment a) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AssignmentDiscussionScreen(
+          assignment: a,
+          student: widget.student,
+        ),
+      ),
+    ).then((_) => setState(() {}));
+  }
+
   @override
   Widget build(BuildContext context) {
     final assignments = FakeDb.assignments;
@@ -67,6 +80,12 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
           ),
         );
 
+        final ranks = FakeDb.computeRanks(a.id);
+        final rank = ranks[widget.student.id];
+        final totalRanked = ranks.length;
+        final score = submission.score;
+        final grade = FakeDb.letterGrade(score);
+
         final isSubmitted =
             submission.score != null ||
             (submission.mcqAnswers != null &&
@@ -77,6 +96,19 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
                 submission.drawingImageId!.isNotEmpty);
 
         final status = isSubmitted ? 'Submitted' : 'Not submitted';
+        final scoreText = score != null
+            ? 'Score: $score${grade != null ? ' ($grade)' : ''}'
+            : null;
+        final rankText = rank != null && totalRanked > 0
+            ? 'Rank: $rank/$totalRanked'
+            : null;
+        final details = [
+          'Posted: ${a.postedDate.toLocal().toString().split(' ').first}',
+          'Due: ${a.dueDate.toLocal().toString().split(' ').first}',
+          'Status: $status',
+          if (scoreText != null) scoreText,
+          if (rankText != null) rankText,
+        ].join(' • ');
 
         return Card(
           child: ListTile(
@@ -85,10 +117,11 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
               color: isSubmitted ? Colors.green : null,
             ),
             title: Text(a.title),
-            subtitle: Text(
-              'Posted: ${a.postedDate.toLocal().toString().split(' ').first} • '
-              'Due: ${a.dueDate.toLocal().toString().split(' ').first} • '
-              'Status: $status',
+            subtitle: Text(details),
+            trailing: IconButton(
+              icon: const Icon(Icons.forum),
+              tooltip: 'Discussion',
+              onPressed: () => _openDiscussion(a),
             ),
             onTap: () => _openAssignment(a),
           ),

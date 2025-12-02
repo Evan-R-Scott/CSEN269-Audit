@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
+import '../shared/direct_message_screen.dart';
 
 /// Parent view: access documents
 class ParentDocumentsScreen extends StatefulWidget {
   final Parent parent;
+  final Student? selectedStudent;
 
-  const ParentDocumentsScreen({super.key, required this.parent});
+  const ParentDocumentsScreen({
+    super.key,
+    required this.parent,
+    this.selectedStudent,
+  });
 
   @override
   State<ParentDocumentsScreen> createState() => _ParentDocumentsScreenState();
@@ -19,11 +25,28 @@ class _ParentDocumentsScreenState extends State<ParentDocumentsScreen> {
   @override
   Widget build(BuildContext context) {
     final documents = FakeDb.documents;
+    final student = widget.selectedStudent;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('School Documents'),
+        title: Text(
+          student != null
+              ? 'School Documents - ${student.name}'
+              : 'School Documents',
+        ),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DirectMessageScreen(parent: widget.parent),
+                ),
+              );
+            },
+            icon: const Icon(Icons.mail),
+            tooltip: 'Messages',
+          ),
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
@@ -41,54 +64,88 @@ class _ParentDocumentsScreenState extends State<ParentDocumentsScreen> {
                 ),
               ),
             )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: documents.length,
-              itemBuilder: (_, index) {
-                final doc = documents[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.picture_as_pdf,
-                      color: Colors.red[600],
-                      size: 32,
+          : Column(
+              children: [
+                if (student != null)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    title: Text(
-                      doc.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          doc.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Uploaded: ${doc.uploadedDate.toLocal().toString().split(' ').first}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[600],
+                        const Icon(Icons.child_care, color: Colors.blue),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Viewing documents for: ${student.name} (${student.className})',
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ),
                       ],
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.open_in_new),
-                      onPressed: () {
-                        _openDocument(doc);
-                      },
-                    ),
-                    onTap: () {
-                      _openDocument(doc);
+                  ),
+                if (student != null)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: _buildParentInsight(student),
+                  ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: documents.length,
+                    itemBuilder: (_, index) {
+                      final doc = documents[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.picture_as_pdf,
+                            color: Colors.red[600],
+                            size: 32,
+                          ),
+                          title: Text(
+                            doc.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                doc.description,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Uploaded: ${doc.uploadedDate.toLocal().toString().split(' ').first}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.open_in_new),
+                            onPressed: () {
+                              _openDocument(doc);
+                            },
+                          ),
+                          onTap: () {
+                            _openDocument(doc);
+                          },
+                        ),
+                      );
                     },
                   ),
-                );
-              },
+                ),
+              ],
             ),
     );
   }
@@ -97,6 +154,98 @@ class _ParentDocumentsScreenState extends State<ParentDocumentsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => DocumentViewerScreen(document: doc)),
+    );
+  }
+
+  Widget _buildParentInsight(Student student) {
+    final graded = FakeDb.submissions
+        .where(
+          (s) => s.studentId == student.id && s.score != null,
+        )
+        .toList();
+
+    if (graded.isEmpty) {
+      return Card(
+        color: Colors.grey[100],
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              const Icon(Icons.info, color: Colors.grey),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'No graded assignments yet for ${student.name}.',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final avgScore = graded
+            .map((s) => s.score!)
+            .reduce((a, b) => a + b) /
+        graded.length;
+    final avgGrade = FakeDb.letterGrade(avgScore.round());
+
+    final latest = graded.last;
+    final latestAssignment = FakeDb.assignments.firstWhere(
+      (a) => a.id == latest.assignmentId,
+      orElse: () => Assignment(
+        id: latest.assignmentId,
+        title: 'Recent assignment',
+        text: '',
+        postedDate: DateTime.now(),
+        dueDate: DateTime.now(),
+        type: latest.type,
+        questions: const [],
+      ),
+    );
+    final latestGrade = FakeDb.letterGrade(latest.score);
+    final note = FakeDb.parentNoteFromAverage(avgScore);
+
+    return Card(
+      color: Colors.blue[50],
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.stacked_line_chart, color: Colors.blue),
+                const SizedBox(width: 8),
+                Text(
+                  'Progress snapshot',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Average score: ${avgScore.toStringAsFixed(1)}'
+              '${avgGrade != null ? ' ($avgGrade)' : ''}',
+              style: const TextStyle(fontSize: 13),
+            ),
+            Text(
+              'Latest: ${latestAssignment.title} — '
+              '${latest.score} ${latestGrade != null ? "($latestGrade)" : ""}',
+              style: const TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              note,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

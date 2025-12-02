@@ -3,6 +3,7 @@ import '../../models.dart';
 import 'teacher_students_tab.dart';
 import 'teacher_assignments_tab.dart';
 import 'teacher_documents_tab.dart';
+import '../shared/direct_message_screen.dart';
 
 /// Teacher home screen with bottom navigation: Students / Assignments / Documents.
 class TeacherHomeScreen extends StatefulWidget {
@@ -69,6 +70,18 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       appBar: AppBar(
         title: Text('Teacher: ${widget.teacher.username}'),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DirectMessageScreen(teacher: widget.teacher),
+                ),
+              );
+            },
+            icon: const Icon(Icons.mail),
+            tooltip: 'Messages',
+          ),
           IconButton(
             onPressed: _changePassword,
             icon: const Icon(Icons.settings),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'teacher_scores_screen.dart';
+import '../shared/assignment_discussion_screen.dart';
 
 /// Teacher view: single assignment → questions + Scores button.
 class TeacherAssignmentDetailScreen extends StatefulWidget {
@@ -196,6 +197,18 @@ class _TeacherAssignmentDetailScreenState
     });
   }
 
+  void _openDiscussion() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AssignmentDiscussionScreen(
+          assignment: widget.assignment,
+          teacher: FakeDb.teachers.first,
+        ),
+      ),
+    );
+  }
+
   String _getQuestionType(QuestionType type) {
     if (type == QuestionType.mcq) {
       return 'MCQ';
@@ -219,6 +232,11 @@ class _TeacherAssignmentDetailScreenState
       appBar: AppBar(
         title: Text(a.title),
         actions: [
+          IconButton(
+            tooltip: 'Discussion',
+            onPressed: _openDiscussion,
+            icon: const Icon(Icons.forum),
+          ),
           // Scores button with submission badge
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),

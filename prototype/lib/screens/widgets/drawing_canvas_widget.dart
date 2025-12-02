@@ -166,6 +166,7 @@ class DrawingCanvasState extends State<DrawingCanvas> {
   final List<LineSegment> lines = [];
   final List<RectangleShape> rectangles = [];
   final List<CircleShape> circles = [];
+  Size canvasSize = const Size(800, 1000);
 
   String currentTool = 'pen';
   double strokeWidth = 3.0;
@@ -288,7 +289,7 @@ class DrawingCanvasState extends State<DrawingCanvas> {
   Future<void> _generateImage() async {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
-    final size = Size(800, 1000);
+    final size = canvasSize;
 
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
@@ -412,16 +413,19 @@ class DrawingCanvasState extends State<DrawingCanvas> {
         ),
         // Canvas
         Expanded(
-          child: GestureDetector(
-            onPanStart: _onPanStart,
-            onPanUpdate: _onPanUpdate,
-            onPanEnd: _onPanEnd,
-            child: Container(
-              color: Colors.grey[100],
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              canvasSize = Size(
+                constraints.maxWidth,
+                constraints.maxHeight,
+              );
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onPanStart: _onPanStart,
+                onPanUpdate: _onPanUpdate,
+                onPanEnd: _onPanEnd,
+                child: Container(
+                  color: Colors.grey[100],
                   child: CustomPaint(
                     painter: DrawingPainter(
                       strokes: strokes,
@@ -437,11 +441,11 @@ class DrawingCanvasState extends State<DrawingCanvas> {
                           ? (_getPaint()..style = PaintingStyle.stroke)
                           : null,
                     ),
-                    size: const Size(800, 1000),
+                    size: canvasSize,
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
         // Generate image button

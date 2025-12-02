@@ -124,6 +124,46 @@ class Parent {
   });
 }
 
+/// Message in an assignment discussion thread.
+class DiscussionMessage {
+  String id;
+  String assignmentId;
+  String? studentId; // sender (student)
+  String? teacherId; // sender (teacher)
+  String text;
+  DateTime createdAt;
+
+  DiscussionMessage({
+    required this.id,
+    required this.assignmentId,
+    this.studentId,
+    this.teacherId,
+    required this.text,
+    required this.createdAt,
+  });
+}
+
+/// Direct message between two users.
+class DirectMessage {
+  String id;
+  String senderRole; // 'student' | 'teacher' | 'parent'
+  String senderId;
+  String recipientRole; // 'student' | 'teacher' | 'parent'
+  String recipientId;
+  String text;
+  DateTime createdAt;
+
+  DirectMessage({
+    required this.id,
+    required this.senderRole,
+    required this.senderId,
+    required this.recipientRole,
+    required this.recipientId,
+    required this.text,
+    required this.createdAt,
+  });
+}
+
 /// FAKE DATABASE (for prototype)
 class FakeDb {
   static List<Teacher> teachers = [
@@ -182,6 +222,105 @@ class FakeDb {
 
   static String generateDocumentId() {
     return 'DOC_${DateTime.now().millisecondsSinceEpoch}';
+  }
+
+  /// In-memory discussion messages per assignment.
+  static List<DiscussionMessage> discussionMessages = [];
+
+  /// In-memory direct messages across users.
+  static List<DirectMessage> directMessages = [];
+
+  static DiscussionMessage addDiscussionMessage({
+    required String assignmentId,
+    String? studentId,
+    String? teacherId,
+    required String text,
+  }) {
+    final msg = DiscussionMessage(
+      id: 'DISC_${DateTime.now().microsecondsSinceEpoch}',
+      assignmentId: assignmentId,
+      studentId: studentId,
+      teacherId: teacherId,
+      text: text,
+      createdAt: DateTime.now(),
+    );
+    discussionMessages.add(msg);
+    return msg;
+  }
+
+  static DirectMessage addDirectMessage({
+    required String senderRole,
+    required String senderId,
+    required String recipientRole,
+    required String recipientId,
+    required String text,
+  }) {
+    final msg = DirectMessage(
+      id: 'DM_${DateTime.now().microsecondsSinceEpoch}',
+      senderRole: senderRole,
+      senderId: senderId,
+      recipientRole: recipientRole,
+      recipientId: recipientId,
+      text: text,
+      createdAt: DateTime.now(),
+    );
+    directMessages.add(msg);
+    return msg;
+  }
+
+  /// Get a student's numeric score for an assignment (if graded).
+  static int? getStudentScore(String assignmentId, String studentId) {
+    final s = submissions.firstWhere(
+      (sub) => sub.assignmentId == assignmentId && sub.studentId == studentId,
+      orElse: () => Submission(
+        assignmentId: assignmentId,
+        studentId: studentId,
+        type: QuestionType.mcq,
+      ),
+    );
+    return s.score;
+  }
+
+  /// Compute ranks (1-based) for a graded assignment: higher scores rank first.
+  static Map<String, int> computeRanks(String assignmentId) {
+    final graded = submissions
+        .where(
+          (s) =>
+              s.assignmentId == assignmentId &&
+              s.score != null,
+        )
+        .toList();
+    graded.sort((a, b) => b.score!.compareTo(a.score!));
+    final ranks = <String, int>{};
+    for (var i = 0; i < graded.length; i++) {
+      ranks[graded[i].studentId] = i + 1;
+    }
+    return ranks;
+  }
+
+  /// Convert a numeric score to a simple letter grade.
+  static String? letterGrade(int? score) {
+    if (score == null) return null;
+    if (score >= 90) return 'A';
+    if (score >= 80) return 'B';
+    if (score >= 70) return 'C';
+    if (score >= 60) return 'D';
+    return 'F';
+  }
+
+  /// Generate a short parent-facing note based on average score.
+  static String parentNoteFromAverage(double avgScore) {
+    if (avgScore >= 90) {
+      return 'Great work! Keep encouraging them to maintain this momentum.';
+    } else if (avgScore >= 80) {
+      return 'Solid performance. A bit more practice can push them to the top.';
+    } else if (avgScore >= 70) {
+      return 'Doing okay. Targeted review of missed topics could help.';
+    } else if (avgScore >= 60) {
+      return 'Needs some support. Consider short daily practice sessions.';
+    } else {
+      return 'Let’s partner up—check assignments together and ask the teacher for help.';
+    }
   }
 }
 
