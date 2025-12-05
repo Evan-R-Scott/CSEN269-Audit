@@ -94,6 +94,18 @@ class _ParentDocumentsScreenState extends State<ParentDocumentsScreen> {
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     child: _buildParentInsight(student),
                   ),
+                if (student != null)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: _buildAlerts(student),
+                  ),
+                if (student != null)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: _buildProgress(student),
+                  ),
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -241,6 +253,104 @@ class _ParentDocumentsScreenState extends State<ParentDocumentsScreen> {
             const SizedBox(height: 6),
             Text(
               note,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlerts(Student student) {
+    final overdue = FakeDb.overdueAssignmentsFor(student.id);
+    final absences = FakeDb.absencesFor(student.id);
+
+    if (overdue.isEmpty && absences.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      color: Colors.orange[50],
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: const [
+                Icon(Icons.warning, color: Colors.orange),
+                SizedBox(width: 8),
+                Text(
+                  'Important alerts',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (absences.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Text(
+                  'Absent on ${absences.last.toLocal().toString().split(' ').first}',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            if (overdue.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Text(
+                  'Missing assignments past due: ${overdue.map((a) => a.title).join(", ")}',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgress(Student student) {
+    final timeline = FakeDb.scoreTimeline(student.id);
+    final insight = FakeDb.subjectInsight(student.id);
+
+    if (timeline.isEmpty) {
+      return Card(
+        color: Colors.grey[100],
+        child: const Padding(
+          padding: EdgeInsets.all(12),
+          child: Text(
+            'No scores yet to chart.',
+            style: TextStyle(fontSize: 13),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      color: Colors.blueGrey[50],
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: const [
+                Icon(Icons.show_chart, color: Colors.blueGrey),
+                SizedBox(width: 8),
+                Text(
+                  'Progress',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 120,
+              child: _ScoreSparkline(timeline: timeline),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              insight,
               style: const TextStyle(fontSize: 13),
             ),
           ],
@@ -441,4 +551,64 @@ class DocumentViewerScreen extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Simple sparkline chart for parent view.
+class _ScoreSparkline extends StatelessWidget {
+  final List<Map<String, dynamic>> timeline;
+
+  const _ScoreSparkline({required this.timeline});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _SparklinePainter(timeline),
+    );
+  }
+}
+
+class _SparklinePainter extends CustomPainter {
+  final List<Map<String, dynamic>> timeline;
+
+  _SparklinePainter(this.timeline);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (timeline.isEmpty) return;
+
+    final paintLine = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final paintPoint = Paint()
+      ..color = Colors.blueAccent
+      ..style = PaintingStyle.fill;
+
+    const maxScore = 100.0;
+    const minScore = 0.0;
+    final count = timeline.length;
+    final double dx = count > 1 ? size.width / (count - 1) : 0.0;
+
+    final path = Path();
+    for (var i = 0; i < count; i++) {
+      final score = timeline[i]['score'] as num;
+      final normalized = ((score - minScore) / (maxScore - minScore))
+          .clamp(0.0, 1.0)
+          .toDouble();
+      final double x = dx * i;
+      final double y = size.height - (normalized * size.height);
+
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+      canvas.drawCircle(Offset(x, y), 4, paintPoint);
+    }
+    canvas.drawPath(path, paintLine);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

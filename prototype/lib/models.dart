@@ -216,6 +216,12 @@ class FakeDb {
     ),
   ];
 
+  /// Days a student was absent (prototype data).
+  static Map<String, List<DateTime>> absences = {
+    'S01': [DateTime(2025, 1, 20)],
+    'S02': [DateTime(2025, 1, 18), DateTime(2025, 1, 21)],
+  };
+
   static String generateDrawingId() {
     return 'DRAW_${DateTime.now().millisecondsSinceEpoch}';
   }
@@ -266,6 +272,83 @@ class FakeDb {
     );
     directMessages.add(msg);
     return msg;
+  }
+
+  /// Assignments past due with no submission by this student.
+  static List<Assignment> overdueAssignmentsFor(String studentId) {
+    final now = DateTime.now();
+    return assignments.where((a) {
+      final hasSubmission = submissions.any(
+        (s) => s.assignmentId == a.id && s.studentId == studentId,
+      );
+      return a.dueDate.isBefore(now) && !hasSubmission;
+    }).toList();
+  }
+
+  /// Absent dates for a student (if any).
+  static List<DateTime> absencesFor(String studentId) {
+    return absences[studentId] ?? [];
+  }
+
+  /// Simple per-student score timeline, newest last.
+  static List<Map<String, dynamic>> scoreTimeline(String studentId) {
+    final graded = submissions
+        .where((s) => s.studentId == studentId && s.score != null)
+        .toList();
+    graded.sort((a, b) => a.submittedAt != null && b.submittedAt != null
+        ? a.submittedAt!.compareTo(b.submittedAt!)
+        : 0);
+
+    return graded.map((s) {
+      final assignment =
+          assignments.firstWhere((a) => a.id == s.assignmentId, orElse: () {
+        return Assignment(
+          id: s.assignmentId,
+          title: 'Assignment',
+          text: '',
+          postedDate: DateTime.now(),
+          dueDate: DateTime.now(),
+          type: s.type,
+          questions: const [],
+        );
+      });
+      return {
+        'title': assignment.title,
+        'score': s.score!,
+      };
+    }).toList();
+  }
+
+  /// Very light subject insight based on question type trends.
+  static String subjectInsight(String studentId) {
+    int mcqTotal = 0;
+    int mcqCount = 0;
+    int drawingTotal = 0;
+    int drawingCount = 0;
+
+    for (final sub in submissions.where(
+      (s) => s.studentId == studentId && s.score != null,
+    )) {
+      if (sub.type == QuestionType.mcq) {
+        mcqTotal += sub.score!;
+        mcqCount++;
+      } else if (sub.type == QuestionType.drawing) {
+        drawingTotal += sub.score!;
+        drawingCount++;
+      }
+    }
+
+    final mcqAvg = mcqCount > 0 ? mcqTotal / mcqCount : null;
+    final artAvg = drawingCount > 0 ? drawingTotal / drawingCount : null;
+
+    if (mcqAvg != null && artAvg != null) {
+      if (mcqAvg < artAvg - 10) {
+        return 'Needs more practice in math, but excellent in art.';
+      } else if (artAvg < mcqAvg - 10) {
+        return 'Art needs support, math performance is strong.';
+      }
+    }
+    return 'Balanced performance — keep up steady practice across subjects.';
   }
 
   /// Get a student's numeric score for an assignment (if graded).
