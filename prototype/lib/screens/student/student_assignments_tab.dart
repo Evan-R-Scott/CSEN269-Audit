@@ -100,7 +100,7 @@ class _StudentAssignmentsTabState extends State<StudentAssignmentsTab> {
             ? 'Score: $score${grade != null ? ' ($grade)' : ''}'
             : null;
         final rankText = rank != null && totalRanked > 0
-            ? 'Rank: $rank/$totalRanked'
+            ? 'Position: $rank/$totalRanked'
             : null;
         final details = [
           'Posted: ${a.postedDate.toLocal().toString().split(' ').first}',
